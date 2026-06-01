@@ -1,5 +1,5 @@
 // Centralized API Wrapper for e-Lost & Found System
-const API_BASE = '/api';
+const API_BASE = 'https://iiui-lost-found.onrender.com/api';
 
 const api = {
   async get(endpoint, params = {}) {
