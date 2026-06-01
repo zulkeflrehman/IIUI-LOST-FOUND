@@ -1,0 +1,53 @@
+{
+  "users": [
+    {
+      "id": "usr_pc183hxi6",
+      "role": "admin",
+      "createdAt": "2026-05-29T15:12:17.688Z",
+      "email": "admin@iiu.edu.pk",
+      "fullName": "IIUI Lost & Found Admin",
+      "department": "Administration & Security",
+      "password": "adminpassword"
+    },
+    {
+      "id": "usr_qojq156ln",
+      "role": "user",
+      "createdAt": "2026-05-29T15:12:17.693Z",
+      "email": "ahmed.fcon@iiu.edu.pk",
+      "fullName": "Ahmed Ali",
+      "department": "Faculty of Computing",
+      "password": "password123"
+    },
+    {
+      "id": "usr_i8ngjwe0z",
+      "role": "user",
+      "createdAt": "2026-05-29T15:12:17.695Z",
+      "email": "zainab.fss@iiu.edu.pk",
+      "fullName": "Zainab Bibi",
+      "department": "Faculty of Social Sciences",
+      "password": "password123"
+    },
+    {
+      "id": "usr_j52hek2bj",
+      "role": "user",
+      "createdAt": "2026-05-29T18:14:24.248Z",
+      "email": "zulkefl.bscs4974@student.iiu.edu.pk",
+      "fullName": "zulkefl",
+      "password": "password123",
+      "department": "Faculty of Computing"
+    },
+    {
+      "id": "usr_eooaao7n4",
+      "role": "user",
+      "createdAt": "2026-06-01T05:17:41.028Z",
+      "email": "zulnaldo77@gmail.com",
+      "fullName": "zulkeflr",
+      "password": "asd123qwe",
+      "department": "Faculty of Management Sciences"
+    }
+  ],
+  "items": [],
+  "claims": [],
+  "chats": [],
+  "notifications": []
+}

@@ -1,0 +1,24 @@
+# For GitHub Repository Description Field
+
+Use this when setting up your GitHub repo:
+
+## Short version (for the description field):
+```
+Smart Lost & Found system for IIUI - Report items, search matches, verify ownership, and chat securely
+```
+
+## Tags to use:
+```
+lost-and-found, campus, iiui, student-portal, nodejs, express, supabase
+```
+
+---
+
+## How to set it on GitHub:
+
+1. Go to your GitHub repo
+2. Click "Edit" (top right of about section)
+3. Paste the short version above
+4. Click "Save changes"
+
+That's it! Now when people search GitHub, they'll find your project.

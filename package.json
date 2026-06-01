@@ -1,0 +1,31 @@
+{
+  "name": "lost-found-iiui",
+  "version": "1.0.0",
+  "description": "A smart Lost & Found system for IIUI students - Report lost items, find belongings, and claim ownership with secure verification",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.106.2",
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^8.0.10"
+  },
+  "keywords": [
+    "lost-and-found",
+    "campus",
+    "iiui",
+    "student-portal",
+    "matching-system",
+    "item-recovery",
+    "secure-chat"
+  ],
+  "author": "IIUI Students",
+  "license": "ISC"
+}
