@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lost & Found @ IIUI | IIUI Campus Lost & Found System</title>
+  <!-- SEO Metas -->
+  <meta name="description" content="Official e-Lost & Found portal for International Islamic University Islamabad. Report lost items, search matches, claim belongings, and connect with finders securely.">
+  <!-- Google Fonts: Outfit (headings) & Inter (UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Custom Style Sheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Icons via FontAwesome (loaded securely via CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+  <!-- Decorative Glowing Orb Backdrops -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+  <div class="glow-orb orb-3"></div>
+
+  <!-- Header & Navigation -->
+  <header class="main-header">
+    <div class="header-container">
+      <a href="#home" class="logo" id="nav-logo">
+        <img src="iiui-logo.jpg" alt="IIUI Logo" class="logo-img">
+        <span>Lost<span class="logo-highlight">&Found@IIUI</span></span>
+      </a>
+
+      <nav class="main-nav" id="main-nav">
+        <a href="#home" class="nav-link active"><i class="fa-solid fa-house"></i> Home</a>
+        <a href="#report" class="nav-link" id="nav-report"><i class="fa-solid fa-circle-plus"></i> Report Item</a>
+        <a href="#dashboard" class="nav-link auth-only" id="nav-dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <a href="#admin" class="nav-link admin-only" id="nav-admin"><i class="fa-solid fa-user-shield"></i> Admin</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown-container auth-only">
+          <button class="icon-btn" id="btn-notifications" aria-label="Notifications">
+            <i class="fa-solid fa-bell"></i>
+            <span class="badge" id="notification-badge" style="display: none;">0</span>
+          </button>
+          <div class="dropdown-panel notification-panel" id="notification-panel">
+            <div class="panel-header">
+              <h3>Notifications</h3>
+              <button class="text-link" id="btn-clear-notifications">Mark all read</button>
+            </div>
+            <div class="panel-content" id="notification-list">
+              <div class="empty-state">No new notifications</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Profile Dropdown / Login Trigger -->
+        <div class="user-menu-container" id="user-menu-container">
+          <button class="btn btn-primary" id="btn-nav-login"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+          <div class="user-profile-menu" id="user-profile-menu" style="display: none;">
+            <button class="profile-trigger" id="btn-profile-trigger">
+              <div class="avatar" id="user-avatar">U</div>
+              <span class="username" id="nav-username">User Name</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-panel profile-panel" id="profile-panel">
+              <div class="profile-info">
+                <h4 id="profile-name">User Name</h4>
+                <p id="profile-email">email@iiu.edu.pk</p>
+                <span class="badge badge-role" id="profile-role">Student</span>
+              </div>
+              <hr>
+              <a href="#dashboard" class="dropdown-item"><i class="fa-solid fa-user"></i> My Dashboard</a>
+              <a href="#dashboard?tab=messages" class="dropdown-item"><i class="fa-solid fa-comments"></i> Chat Messages</a>
+              <button class="dropdown-item text-danger" id="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Pages Container -->
+  <main class="main-content">
+    
+    <!-- 1. HOME / FEED PAGE -->
+    <section id="page-home" class="app-page active">
+      <div class="hero-section">
+        <h1>Recover What is Yours. <span class="gradient-text">Return What You Find.</span></h1>
+        <p class="hero-subtitle">The official smart Lost & Found portal for International Islamic University Islamabad (IIUI) students & staff. Connecting belongings back to their rightful owners.</p>
+        <div class="hero-actions">
+          <a href="#report" class="btn btn-gradient btn-lg"><i class="fa-solid fa-circle-plus"></i> Report Lost/Found Item</a>
+        </div>
+        
+        <!-- Live System Statistics -->
+        <div class="stats-ticker-grid">
+          <div class="stat-ticker-card">
+            <div class="ticker-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+            <div class="ticker-info">
+              <span class="ticker-value" id="stat-reported">0</span>
+              <span class="ticker-label">Total Listings</span>
+            </div>
+          </div>
+          <div class="stat-ticker-card">
+            <div class="ticker-icon success"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="ticker-info">
+              <span class="ticker-value" id="stat-recovered">0%</span>
+              <span class="ticker-label">Recovery Success Rate</span>
+            </div>
+          </div>
+          <div class="stat-ticker-card animate-pulse">
+            <div class="ticker-icon matched"><i class="fa-solid fa-bolt"></i></div>
+            <div class="ticker-info">
+              <span class="ticker-value" id="stat-matches">0</span>
+              <span class="ticker-label">Smart Matches Found</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How It Works Step-by-Step Guide Section -->
+      <section class="how-it-works-section" style="margin-top: 40px; margin-bottom: 60px;">
+        <div class="glass-card" style="padding: 40px; border-radius: 20px; text-align: center;">
+          <h2 style="font-size: 32px; margin-bottom: 10px;"><i class="fa-solid fa-graduation-cap text-gradient"></i> IIUI Campus Recovery Guide</h2>
+          <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 35px; font-size: 15px;">Get your lost belongings back in 4 simple, secure steps:</p>
+          
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: left;">
+            <!-- Step 1 -->
+            <div class="glass-card" style="padding: 20px; border-radius: 12px; background: rgba(7, 11, 21, 0.4); border: 1px dashed var(--glass-border);">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-gradient); color: #070b15; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-bottom: 15px; font-family: 'Outfit', sans-serif;">1</div>
+              <h4 style="font-size: 16px; margin-bottom: 8px; color: var(--accent-cyan);"><i class="fa-solid fa-user-check"></i> 1. Sign Up & Verify</h4>
+              <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Create an account with your email. We will instantly send a real 6-digit verification code (OTP) to your inbox to activate your profile.</p>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="glass-card" style="padding: 20px; border-radius: 12px; background: rgba(7, 11, 21, 0.4); border: 1px dashed var(--glass-border);">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-gradient); color: #070b15; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-bottom: 15px; font-family: 'Outfit', sans-serif;">2</div>
+              <h4 style="font-size: 16px; margin-bottom: 8px; color: var(--accent-cyan);"><i class="fa-solid fa-bullhorn"></i> 2. Post Lost / Found</h4>
+              <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Report what you lost or found. While you type, our smart scanner searches the database in real-time to alert you of potential matches!</p>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="glass-card" style="padding: 20px; border-radius: 12px; background: rgba(7, 11, 21, 0.4); border: 1px dashed var(--glass-border);">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-gradient); color: #070b15; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-bottom: 15px; font-family: 'Outfit', sans-serif;">3</div>
+              <h4 style="font-size: 16px; margin-bottom: 8px; color: var(--accent-cyan);"><i class="fa-solid fa-signature"></i> 3. Submit Claim Proof</h4>
+              <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Found your item in the listings? Tap "Claim", write a brief proof description, and upload your Student Card to show it belongs to you.</p>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="glass-card" style="padding: 20px; border-radius: 12px; background: rgba(7, 11, 21, 0.4); border: 1px dashed var(--glass-border);">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-gradient); color: #070b15; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; margin-bottom: 15px; font-family: 'Outfit', sans-serif;">4</div>
+              <h4 style="font-size: 16px; margin-bottom: 8px; color: var(--accent-cyan);"><i class="fa-solid fa-handshake"></i> 4. Chat & Meet Up</h4>
+              <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">Once approved, a private chat room opens! Chat securely with the finder to arrange a safe meetup on campus and get your item back.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Feed & Search Section -->
+      <div class="feed-section" id="feed">
+        <div class="search-filter-panel glass-card">
+          <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="search-input" placeholder="Search by name, description, details...">
+          </div>
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label for="filter-type">Type</label>
+              <select id="filter-type">
+                <option value="">All Types</option>
+                <option value="lost">Lost Items</option>
+                <option value="found">Found Items</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-category">Category</label>
+              <select id="filter-category">
+                <option value="">All Categories</option>
+                <option value="id-cards">ID Cards</option>
+                <option value="mobiles">Mobile Phones & Tech</option>
+                <option value="wallets">Wallets & Purses</option>
+                <option value="books">Books & Stationery</option>
+                <option value="others">Others</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filter-location">IIUI Campus Location</label>
+              <select id="filter-location">
+                <option value="">All Campus Locations</option>
+                <option value="Central Library">Central Library</option>
+                <option value="FCON">Faculty of Computing (FCON)</option>
+                <option value="Faisal Mosque Campus">Faisal Mosque Campus</option>
+                <option value="Faculty of Social Sciences">Faculty of Social Sciences</option>
+                <option value="Hostels H-10">Hostels H-10 Campus</option>
+                <option value="Administration Block">Administration Block</option>
+                <option value="Student Cafe">Student Cafe & Canteen</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button class="btn btn-secondary btn-full" id="btn-reset-filters"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="feed-container">
+          <div class="feed-header">
+            <h2>Active Listings</h2>
+            <div class="feed-tabs">
+              <button class="feed-tab-btn active" data-type="all">All Items</button>
+              <button class="feed-tab-btn" data-type="lost">Lost</button>
+              <button class="feed-tab-btn" data-type="found">Found</button>
+            </div>
+          </div>
+          
+          <!-- Items Loader & Grid -->
+          <div class="items-grid" id="items-grid">
+            <!-- Dynamically populated -->
+            <div class="spinner-container">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. LOGIN / SIGNUP PAGE -->
+    <section id="page-auth" class="app-page">
+      <div class="auth-wrapper">
+        <div class="auth-card glass-card">
+          <div class="auth-tabs">
+            <button class="auth-tab-btn active" id="tab-login-btn">Sign In</button>
+            <button class="auth-tab-btn" id="tab-signup-btn">Create Account</button>
+          </div>
+
+          <!-- SIGN IN FORM -->
+          <div class="auth-form-container" id="login-form-container">
+            <h2>Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to report, track, and claim items on campus.</p>
+            <form id="form-login">
+              <div class="input-group">
+                <label for="login-email">Email Address</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-envelope"></i>
+                  <input type="email" id="login-email" required placeholder="e.g. ahmed@gmail.com">
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="login-password">Password</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-lock"></i>
+                  <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-gradient btn-full btn-lg"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+            </form>
+          </div>
+
+          <!-- SIGN UP FORM -->
+          <div class="auth-form-container" id="signup-form-container" style="display: none;">
+            <h2>Register Profile</h2>
+            <p class="auth-subtitle">Connect with IIUI peers to recover lost belongings securely.</p>
+            <form id="form-signup">
+              <div class="input-group">
+                <label for="signup-name">Full Name</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user"></i>
+                  <input type="text" id="signup-name" required placeholder="e.g. Ahmed Ali">
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="signup-email">Email Address</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-envelope"></i>
+                  <input type="email" id="signup-email" required placeholder="e.g. student@gmail.com">
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="signup-dept">Department / Faculty</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-graduation-cap"></i>
+                  <select id="signup-dept" required>
+                    <option value="">Select Faculty...</option>
+                    <option value="Faculty of Computing">Faculty of Computing (FCON)</option>
+                    <option value="Faculty of Engineering">Faculty of Engineering (FET)</option>
+                    <option value="Faculty of Social Sciences">Faculty of Social Sciences (FSS)</option>
+                    <option value="Faculty of Management Sciences">Faculty of Management Sciences (FMS)</option>
+                    <option value="Shariah & Law">Faculty of Shariah & Law</option>
+                    <option value="Others">Others</option>
+                  </select>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="signup-password">Password</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-lock"></i>
+                  <input type="password" id="signup-password" required placeholder="At least 6 characters">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-gradient btn-full btn-lg"><i class="fa-solid fa-user-plus"></i> Request OTP Code</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. REPORT ITEM PAGE -->
+    <section id="page-report" class="app-page">
+      <div class="form-wrapper">
+        <div class="glass-card report-card">
+          <div class="report-header">
+            <h2><i class="fa-solid fa-bullhorn text-gradient"></i> Report a Lost or Found Item</h2>
+            <p>Provide details to help matching algorithms run immediately.</p>
+          </div>
+
+          <form id="form-report-item" enctype="multipart/form-data">
+            <div class="form-grid">
+              <div class="form-left">
+                <!-- Toggle lost / found -->
+                <div class="input-group">
+                  <label>Reporting Type</label>
+                  <div class="type-selector-grid">
+                    <label class="type-option-card" id="label-type-lost">
+                      <input type="radio" name="item-type" value="lost" checked required>
+                      <div class="option-content">
+                        <i class="fa-solid fa-search"></i>
+                        <span>Lost Item</span>
+                      </div>
+                    </label>
+                    <label class="type-option-card" id="label-type-found">
+                      <input type="radio" name="item-type" value="found">
+                      <div class="option-content">
+                        <i class="fa-solid fa-hand-holding-hand"></i>
+                        <span>Found Item</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="input-group">
+                  <label for="report-title">Item Title / Name</label>
+                  <input type="text" id="report-title" required placeholder="e.g. Black HP Laptop Charger, Red Wallet" class="input-styled">
+                </div>
+
+                <div class="grid-2-col">
+                  <div class="input-group">
+                    <label for="report-category">Category</label>
+                    <select id="report-category" required class="input-styled">
+                      <option value="">Choose category...</option>
+                      <option value="id-cards">ID Cards</option>
+                      <option value="mobiles">Mobile Phones & Tech</option>
+                      <option value="wallets">Wallets & Purses</option>
+                      <option value="books">Books & Stationery</option>
+                      <option value="others">Others</option>
+                    </select>
+                  </div>
+                  <div class="input-group">
+                    <label for="report-location">Campus Location</label>
+                    <select id="report-location" required class="input-styled">
+                      <option value="">Choose location...</option>
+                      <option value="Central Library">Central Library</option>
+                      <option value="FCON">Faculty of Computing (FCON)</option>
+                      <option value="Faisal Mosque Campus">Faisal Mosque Campus</option>
+                      <option value="Faculty of Social Sciences">Faculty of Social Sciences</option>
+                      <option value="Hostels H-10">Hostels H-10 Campus</option>
+                      <option value="Administration Block">Administration Block</option>
+                      <option value="Student Cafe">Student Cafe & Canteen</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="input-group">
+                  <label for="report-date">Date Lost / Found</label>
+                  <input type="date" id="report-date" required class="input-styled">
+                </div>
+              </div>
+
+              <div class="form-right">
+                <div class="input-group">
+                  <label for="report-desc">Detailed Description</label>
+                  <textarea id="report-desc" rows="5" required placeholder="Describe details (e.g. brand, color, serial numbers, labels, contents of the wallet, or keychain details) to verify authenticity..." class="input-styled"></textarea>
+                </div>
+
+                <!-- Dropzone Image File Upload -->
+                <div class="input-group">
+                  <label>Item Image (Recommended)</label>
+                  <div class="image-dropzone" id="image-dropzone">
+                    <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                    <p class="dropzone-text">Click or drag image here to upload</p>
+                    <p class="dropzone-hint">Supports JPEG, PNG, WEBP (Max 5MB)</p>
+                    <input type="file" id="report-image" accept="image/*" class="dropzone-input" style="display: none;">
+                    <div class="dropzone-preview" id="dropzone-preview" style="display: none;">
+                      <img id="preview-img" src="" alt="Preview">
+                      <button type="button" class="btn-remove-preview" id="btn-remove-preview"><i class="fa-solid fa-circle-xmark"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pre-check Duplicates Warning Dialog Box (Hidden initially) -->
+            <div class="duplicate-warning-container glass-card border-warning" id="duplicate-warning-box" style="display: none;">
+              <div class="warning-header">
+                <i class="fa-solid fa-triangle-exclamation text-warning animate-bounce"></i>
+                <div>
+                  <h4>Potential Duplicate Match Detected!</h4>
+                  <p>Our intelligent system found items matching your description that were already reported:</p>
+                </div>
+              </div>
+              <div class="warning-items-list" id="duplicate-warning-items">
+                <!-- Filled dynamically -->
+              </div>
+              <p class="warning-footer">If one of these matches your item, you can claim it directly instead of creating a new post!</p>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="window.location.hash='#home'">Cancel</button>
+              <button type="submit" class="btn btn-gradient btn-lg" id="btn-submit-report"><i class="fa-solid fa-paper-plane"></i> Submit Report</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ITEM DETAILS PAGE -->
+    <section id="page-item-detail" class="app-page">
+      <div class="detail-wrapper" id="detail-wrapper">
+        <!-- Dynamically loaded details -->
+        <div class="spinner-container">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. USER DASHBOARD PAGE -->
+    <section id="page-dashboard" class="app-page">
+      <div class="dashboard-container">
+        <!-- Dashboard Sidebar Navigation -->
+        <aside class="dashboard-sidebar glass-card">
+          <div class="sidebar-user">
+            <div class="avatar" id="dash-sidebar-avatar">U</div>
+            <h3 id="dash-sidebar-name">User Name</h3>
+            <span class="badge" id="dash-sidebar-dept">Computing</span>
+          </div>
+          <nav class="sidebar-nav">
+            <button class="dash-tab-btn active" data-tab="overview"><i class="fa-solid fa-chart-simple"></i> Overview</button>
+            <button class="dash-tab-btn" data-tab="my-items"><i class="fa-solid fa-list-check"></i> My Reported Items</button>
+            <button class="dash-tab-btn" data-tab="claims"><i class="fa-solid fa-hand-holding-hand"></i> Claims Received</button>
+            <button class="dash-tab-btn" data-tab="my-claims"><i class="fa-solid fa-clipboard-question"></i> Claims Submitted</button>
+            <button class="dash-tab-btn" data-tab="messages"><i class="fa-solid fa-comments"></i> Messages <span class="badge badge-pulse" id="chat-count-badge" style="display: none;">0</span></button>
+          </nav>
+        </aside>
+
+        <!-- Dashboard Content Panels -->
+        <div class="dashboard-main glass-card">
+          
+          <!-- Tab 1: OVERVIEW -->
+          <div class="dash-content-panel active" id="dash-overview">
+            <h2>Welcome to your Dashboard</h2>
+            <p class="panel-subtitle">Monitor claims, read matching notifications, and chat with finders.</p>
+
+            <!-- Easy Dashboard Guide Card -->
+            <div class="dashboard-guide-card glass-card" style="padding: 20px; border-radius: 12px; background: rgba(0, 242, 254, 0.03); border: 1px solid var(--glass-border); margin: 20px 0; text-align: left;">
+              <h4 style="color: var(--accent-cyan); margin-bottom: 12px; font-size: 14px; font-weight: 600;"><i class="fa-solid fa-compass text-gradient"></i> Quick Guide: What does each section do?</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px 25px; font-size: 12px; line-height: 1.6; color: var(--text-secondary);">
+                <div>
+                  <strong style="color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 3px;"><i class="fa-solid fa-list-check" style="color: var(--accent-cyan);"></i> My Reported Items</strong>
+                  See the items you have posted. You can edit details, check smart matching suggestions, or delete posts once items are returned.
+                </div>
+                <div>
+                  <strong style="color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 3px;"><i class="fa-solid fa-hand-holding-hand" style="color: var(--accent-cyan);"></i> Claims Received</strong>
+                  Review requests from students claiming ownership of items you found. Check their proof description and Student Card, then approve or reject them.
+                </div>
+                <div>
+                  <strong style="color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 3px;"><i class="fa-solid fa-clipboard-question" style="color: var(--accent-cyan);"></i> Claims Submitted</strong>
+                  Keep track of all claims you filed for lost items found by others. You can monitor if the finder has approved or rejected your requests.
+                </div>
+                <div>
+                  <strong style="color: var(--text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 3px;"><i class="fa-solid fa-comments" style="color: var(--accent-cyan);"></i> Messages (Chats)</strong>
+                  Once a claim is approved, a private chat room opens! Message the other student safely here to coordinate when and where to meet up on campus.
+                </div>
+              </div>
+            </div>
+            
+            <!-- Quick Info Cards -->
+            <div class="overview-metrics-grid">
+              <div class="metric-card">
+                <div class="metric-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                <div class="metric-info">
+                  <h4 id="metric-my-items">0</h4>
+                  <p>My Postings</p>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon alert"><i class="fa-solid fa-hand-holding-hand"></i></div>
+                <div class="metric-info">
+                  <h4 id="metric-claims-recv">0</h4>
+                  <p>Claims Received</p>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon success"><i class="fa-solid fa-clipboard-check"></i></div>
+                <div class="metric-info">
+                  <h4 id="metric-claims-sent">0</h4>
+                  <p>My Claims</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Notifications Section -->
+            <div class="recent-notifications-section">
+              <h3>Recent Matching Updates</h3>
+              <div class="notification-feed-list" id="dash-notification-list">
+                <!-- Dynamically populated notifications -->
+                <div class="empty-state">No new updates</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: MY ITEMS -->
+          <div class="dash-content-panel" id="dash-my-items">
+            <div class="panel-header">
+              <h2>My Reported Items</h2>
+              <a href="#report" class="btn btn-primary btn-sm"><i class="fa-solid fa-circle-plus"></i> New Report</a>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Type</th>
+                    <th>Date Posted</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-my-items-table">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 3: CLAIMS RECEIVED -->
+          <div class="dash-content-panel" id="dash-claims">
+            <h2>Claims Received on Your Items</h2>
+            <p class="panel-subtitle">Review verification descriptions and student card uploads of individuals claiming items you found.</p>
+            <div class="claims-list-grid" id="dash-claims-list">
+              <!-- Dynamically populated -->
+              <div class="empty-state">No claims received yet</div>
+            </div>
+          </div>
+
+          <!-- Tab 4: MY CLAIMS -->
+          <div class="dash-content-panel" id="dash-my-claims">
+            <h2>Claims Submitted by You</h2>
+            <p class="panel-subtitle">Check the status of your claims and contact finders once approved.</p>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Item Title</th>
+                    <th>Date Filed</th>
+                    <th>Claim Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-my-claims-table">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 5: SECURE MESSENGER -->
+          <div class="dash-content-panel" id="dash-messages">
+            <h2>Campus Coordination Messenger</h2>
+            <p class="panel-subtitle">Once claims are approved, utilize this portal to discuss secure meetup locations on campus.</p>
+            
+            <div class="chat-system-layout">
+              <!-- Chat Room Sidebar -->
+              <div class="chat-sidebar" id="chat-rooms-list">
+                <!-- Dynamically populated rooms -->
+                <div class="empty-state">No active coordination chats. Approve a claim to start chatting!</div>
+              </div>
+
+              <!-- Active Chat window -->
+              <div class="chat-window" id="active-chat-window">
+                <div class="chat-window-empty" id="chat-empty-state">
+                  <i class="fa-solid fa-comments chat-empty-icon"></i>
+                  <h4>Select a coordination room</h4>
+                  <p>Choose an approved claim from the list to start coordinating delivery.</p>
+                </div>
+                <div class="chat-window-content" id="chat-window-content" style="display: none;">
+                  <div class="chat-header">
+                    <div>
+                      <h4 id="chat-room-title">Item Title</h4>
+                      <p id="chat-room-participant"><i class="fa-solid fa-user"></i> Coordinate with: Loading...</p>
+                    </div>
+                    <span class="badge badge-success">Approved Claim</span>
+                  </div>
+                  <div class="chat-messages" id="chat-messages-container">
+                    <!-- Dynamic message elements -->
+                  </div>
+                  <form class="chat-input-area" id="chat-message-form">
+                    <input type="text" id="chat-input-field" required placeholder="Type meetup instructions, campus spots, times...">
+                    <button type="submit" class="btn btn-gradient btn-icon"><i class="fa-solid fa-paper-plane"></i></button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ADMIN PANEL PAGE -->
+    <section id="page-admin" class="app-page">
+      <div class="admin-container">
+        <div class="admin-header">
+          <h2><i class="fa-solid fa-user-shield text-gradient"></i> Administrator Console</h2>
+          <p>Verify item listings, moderate reports, and review analytics on recovery success rates.</p>
+        </div>
+
+        <div class="admin-stats-grid">
+          <div class="metric-card">
+            <div class="metric-icon"><i class="fa-solid fa-globe"></i></div>
+            <div class="metric-info">
+              <h3 id="admin-stat-total">0</h3>
+              <p>Total Items Reported</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon alert"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="metric-info">
+              <h3 id="admin-stat-lost">0</h3>
+              <p>Active Lost Listings</p>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon info"><i class="fa-solid fa-hand-holding-hand"></i></div>
+            <div class="metric-info">
+              <h3 id="admin-stat-found">0</h3>
+              <p>Active Found Listings</p>
+            </div>
+          </div>
+          <div class="metric-card success">
+            <div class="metric-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="metric-info">
+              <h3 id="admin-stat-recovered">0</h3>
+              <p>Successfully Recovered</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-panels-grid">
+          <!-- Active Queue Moderation -->
+          <div class="admin-panel glass-card">
+            <h3>Item Moderation Queue</h3>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Reporter</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-moderation-table">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- OTP Verification Modal -->
+  <div class="modal-backdrop" id="modal-otp" style="display: none;">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-shield-halved text-gradient"></i> IIUI Email Verification</h3>
+        <button class="btn-close-modal" id="btn-close-otp"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body text-center">
+        <p>A secure 6-digit verification code has been dispatched to:</p>
+        <h4 id="otp-target-email" class="text-gradient">email@iiu.edu.pk</h4>
+        
+        <div class="otp-simulated-notification glass-card border-info">
+          <i class="fa-solid fa-envelope-open-text text-info"></i>
+          <div>
+            <strong>Check Your Inbox</strong><br>
+            Please check your official email (including spam/junk folder) for your activation code.
+          </div>
+        </div>
+
+        <p class="margin-tb-15">Enter the 6-digit verification code below to activate your student profile:</p>
+        <div class="otp-input-container">
+          <input type="text" id="otp-input" maxlength="6" autofocus placeholder="000000" class="otp-digits-input">
+        </div>
+        
+        <button class="btn btn-gradient btn-full btn-lg margin-top-20" id="btn-verify-otp"><i class="fa-solid fa-circle-check"></i> Verify & Register</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Item Claim Submission Modal (Claims Proof Form Drawer) -->
+  <div class="modal-backdrop" id="modal-claim" style="display: none;">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-signature text-gradient"></i> Submit Recovery Claim</h3>
+        <button class="btn-close-modal" id="btn-close-claim"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="form-submit-claim" enctype="multipart/form-data">
+        <div class="modal-body">
+          <p>Provide specific ownership details. The reporter will inspect these details prior to approving your coordination chat.</p>
+          
+          <input type="hidden" id="claim-item-id">
+          
+          <div class="input-group">
+            <label for="claim-proof-desc">Ownership Proof / Details</label>
+            <textarea id="claim-proof-desc" rows="4" required placeholder="e.g. Describe items inside the wallet, serial numbers of electronics, markings, brand details, exact cash amount, or the unique lockscreen background..."></textarea>
+          </div>
+
+          <!-- Claim student card verification image dropzone -->
+          <div class="input-group">
+            <label>Verify IIUI Student ID Card (Recommended)</label>
+            <div class="image-dropzone" id="claim-student-card-dropzone">
+              <i class="fa-solid fa-address-card cloud-icon"></i>
+              <p class="dropzone-text">Click or drag your IIUI Student Card image here</p>
+              <input type="file" id="claim-student-card" accept="image/*" class="dropzone-input" style="display: none;">
+              <div class="dropzone-preview" id="claim-dropzone-preview" style="display: none;">
+                <img id="claim-preview-img" src="" alt="Student Card Preview">
+                <button type="button" class="btn-remove-preview" id="btn-remove-claim-preview"><i class="fa-solid fa-circle-xmark"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-claim">Cancel</button>
+          <button type="submit" class="btn btn-gradient" id="btn-confirm-claim"><i class="fa-solid fa-paper-plane"></i> File Claim Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Notification Toast Alert Box (Real Time Matched Warnings popup) -->
+  <div class="toast-notification-container" id="toast-container"></div>
+
+  <!-- JavaScript Application Files -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
