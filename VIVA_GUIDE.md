@@ -218,6 +218,15 @@ System automatically checks database and finds:
 - Sends verification OTP codes
 - Sends notifications to users
 
+### SMS Alert Service
+- **Twilio API (with Local Viva Simulator Fallback)**
+- Dispatches automated SMS alerts to students for real-time mobile notifications:
+  - Account registration OTP codes
+  - Account activation welcome notification
+  - New claim reports received by finders
+  - Claim approvals & rejections received by claimers
+  - System-wide Smart Match alerts when a lost/found listing meets fuzzy matching criteria
+
 ### File Upload
 - **Multer** - Node.js middleware
 - Handles form-data (files + fields)
@@ -586,23 +595,22 @@ app.post('/api/items', upload.single('image'), async (req, res) => {
 #### 1. **Users Table**
 ```sql
 CREATE TABLE users (
-  id          INTEGER PRIMARY KEY,
+  id          VARCHAR(255) PRIMARY KEY,
   email       VARCHAR(255) UNIQUE NOT NULL,
   password    VARCHAR(255) NOT NULL,
-  name        VARCHAR(255) NOT NULL,
-  department  VARCHAR(255),
-  avatar      VARCHAR(255),
+  fullname    VARCHAR(255) NOT NULL,
+  department  VARCHAR(255) NOT NULL,
+  phone       VARCHAR(50) NOT NULL,  -- Added for SMS Alerts!
   role        VARCHAR(50) DEFAULT 'user', -- 'user' or 'admin'
-  isVerified  BOOLEAN DEFAULT FALSE,
-  createdAt   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  createdat   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
 **Example Data:**
-| id | email | password | name | role |
-|----|-------|----------|------|------|
-| 1 | ahmed@gmail.com | $2b$10$xyz... | Ahmed Ali | user |
-| 2 | admin@iiui.edu.pk | $2b$10$abc... | Admin | admin |
+| id | email | password | name | phone | role |
+|----|-------|----------|------|-------|------|
+| u_k8f9a2b1 | ahmed.fcon@iiu.edu.pk | $2b$10$xyz... | Ahmed Ali | +923001234567 | user |
+| u_admin123 | admin@iiu.edu.pk | $2b$10$abc... | Admin | +920000000000 | admin |
 
 #### 2. **Items Table**
 ```sql
@@ -1866,8 +1874,69 @@ app.put('/claims/:claimId/approve', async (req, res) => {
 8. If proof matches, clicks "Approve Claim"
 9. Backend updates claim to "approved"
 10. Chat room created between finder and claimer
-11. Both users get notifications
 12. Private chat opens for pickup coordination
+
+---
+
+### Walkthrough 4: SMS Alert Dispatches (End-to-End)
+
+This walkthrough documents the full flow of how the **SMS Alert** feature operates, demonstrating complete code ownership.
+
+#### 1. **Frontend Input Selection (index.html)**
+During signup, the user provides their mobile number:
+```html
+<div class="input-group">
+  <label for="signup-phone">Mobile / Phone Number (for SMS Alerts)</label>
+  <div class="input-with-icon">
+    <i class="fa-solid fa-phone"></i>
+    <input type="tel" id="signup-phone" required placeholder="e.g. +923001234567">
+  </div>
+</div>
+```
+
+#### 2. **Frontend Dispatch (auth.js)**
+The phone number is read from the input and posted to the `/auth/register` API endpoint:
+```javascript
+const phone = document.getElementById('signup-phone').value;
+const res = await api.post('/auth/register', { email, fullName, password, department, phone });
+```
+
+#### 3. **Backend SMS Sender Service (server.js)**
+The backend checks if real Twilio API credentials are set in the `.env` file. If they are configured, it makes an HTTPS POST request to the official Twilio REST API. Otherwise, it defaults to a **simulated developer console log & toast notification** for viva demonstration:
+```javascript
+async function sendSmsAlert(toPhone, messageText) {
+  if (!toPhone || toPhone.trim().length < 5) return;
+  const cleanPhone = toPhone.replace(/[^\d+]/g, '');
+
+  console.log(`📱 SMS ALERT DISPATCHED TO: ${cleanPhone} | MSG: ${messageText}`);
+
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER) {
+    // Real Twilio HTTPS call via native node https module...
+  } else {
+    // Simulated Mode for Viva
+    console.log(`   Status: ✅ SIMULATED (Twilio credentials not configured)`);
+  }
+}
+```
+
+#### 4. **Decoupled Match Alert Dispatching via Callback (db_supabase.js)**
+Since the matching engine runs inside the database module `db_supabase.js` and the HTTP server endpoints exist inside `server.js`, we use a **Callback injection mechanism** to keep the modules decoupled:
+
+```javascript
+// db_supabase.js
+let _smsCallback = null;
+function setSmsCallback(fn) { _smsCallback = fn; }
+
+// In matching.triggerMatchChecking()
+if (_smsCallback && score >= 55) {
+  _smsCallback(userPhone, `[IIUI Lost & Found] Smart Match found! Similar item "${existing.title}" reported...`);
+}
+```
+
+```javascript
+// server.js (Initialization)
+db.setSmsCallback(sendSmsAlert);
+```
 
 ---
 

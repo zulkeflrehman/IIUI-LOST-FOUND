@@ -73,11 +73,12 @@ const auth = {
         const fullName = document.getElementById('signup-name').value;
         const email = document.getElementById('signup-email').value;
         const department = document.getElementById('signup-dept').value;
+        const phone = document.getElementById('signup-phone').value;
         const password = document.getElementById('signup-password').value;
 
 
         try {
-          const res = await api.post('/auth/register', { email, fullName, password, department });
+          const res = await api.post('/auth/register', { email, fullName, password, department, phone });
           
           // Show the OTP verification modal - code was sent to real email
           document.getElementById('otp-target-email').innerText = email;
@@ -86,7 +87,7 @@ const auth = {
           // Save email for verification step
           window.pendingEmailForVerification = email;
 
-          app.showToast('Verification code sent! Check your email inbox.', 'success');
+          app.showToast('Verification code sent! Check your email inbox & SMS logs.', 'success');
         } catch (err) {
           app.showToast(err.message, 'danger');
         }
@@ -169,6 +170,21 @@ const auth = {
       document.getElementById('profile-name').innerText = this.currentUser.fullName;
       document.getElementById('profile-email').innerText = this.currentUser.email;
       
+      const profilePhone = document.getElementById('profile-phone');
+      if (profilePhone) {
+        profilePhone.innerHTML = `<i class="fa-solid fa-phone" style="font-size: 10px;"></i> ${this.currentUser.phone || 'N/A'}`;
+      }
+
+      // Update Dashboard Sidebar elements
+      const dashAvatar = document.getElementById('dash-sidebar-avatar');
+      const dashName = document.getElementById('dash-sidebar-name');
+      const dashDept = document.getElementById('dash-sidebar-dept');
+      if (dashAvatar) dashAvatar.innerText = this.currentUser.fullName.charAt(0).toUpperCase();
+      if (dashName) dashName.innerText = this.currentUser.fullName;
+      if (dashDept) {
+        dashDept.innerText = this.currentUser.role === 'admin' ? 'Administrator' : this.currentUser.department;
+      }
+      
       const roleBadge = document.getElementById('profile-role');
       if (this.currentUser.role === 'admin') {
         roleBadge.innerText = 'Administrator';
@@ -188,6 +204,14 @@ const auth = {
     } else {
       if (userMenu) userMenu.style.display = 'none';
       if (loginBtn) loginBtn.style.display = 'block';
+
+      // Clear Dashboard Sidebar elements
+      const dashAvatar = document.getElementById('dash-sidebar-avatar');
+      const dashName = document.getElementById('dash-sidebar-name');
+      const dashDept = document.getElementById('dash-sidebar-dept');
+      if (dashAvatar) dashAvatar.innerText = 'U';
+      if (dashName) dashName.innerText = 'User Name';
+      if (dashDept) dashDept.innerText = 'Computing';
 
       document.querySelectorAll('.auth-only').forEach(el => el.style.display = 'none');
       document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');

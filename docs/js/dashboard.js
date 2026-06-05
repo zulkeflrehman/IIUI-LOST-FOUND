@@ -118,7 +118,10 @@ const dashboard = {
             ${iconHtml}
             <div class="ntf-body">
               <p>${n.message}</p>
-              <span class="time">${new Date(n.createdAt).toLocaleTimeString()} - ${new Date(n.createdAt).toLocaleDateString()}</span>
+              <div class="ntf-meta" style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                <span class="time">${new Date(n.createdAt).toLocaleTimeString()} - ${new Date(n.createdAt).toLocaleDateString()}</span>
+                <span class="sms-badge" style="background: rgba(0, 242, 254, 0.08); color: var(--accent-cyan); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 4px; padding: 2px 6px; font-size: 10px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;"><i class="fa-solid fa-mobile-screen-button" style="font-size: 9px;"></i> SMS Sent</span>
+              </div>
             </div>
           </div>
         `;

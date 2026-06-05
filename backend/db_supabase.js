@@ -56,6 +56,7 @@ function toDbUser(user) {
     fullname: user.fullName,
     department: user.department,
     password: user.password,
+    phone: user.phone || '',
     role: user.role,
     createdat: user.createdAt
   };
@@ -69,6 +70,7 @@ function fromDbUser(row) {
     fullName: row.fullname,
     department: row.department,
     password: row.password,
+    phone: row.phone || '',
     role: row.role,
     createdAt: row.createdat
   };
@@ -211,6 +213,10 @@ async function enrichChatRoom(room) {
     createdAt: room.createdat
   };
 }
+
+// --- SMS CALLBACK (injected from server.js) ---
+let _smsCallback = null;
+function setSmsCallback(fn) { _smsCallback = fn; }
 
 // --- MODULE IMPLEMENTATION ---
 
@@ -540,6 +546,23 @@ const matching = {
           message: `Smart Match found! A new similar ${newItem.type} item "${newItem.title}" has been reported at ${newItem.location} (${confidence}% match score).`,
           link: `items?id=${newItem.id}`
         });
+
+        // Send SMS alerts to both parties if callback is set
+        if (_smsCallback) {
+          try {
+            const userNew = await users.find(u => u.id === newItem.reporterId);
+            const userExisting = await users.find(u => u.id === existing.reporterId);
+            
+            if (userNew && userNew.phone) {
+              _smsCallback(userNew.phone, `[IIUI Lost & Found] Smart Match found! A similar ${targetType} item "${existing.title}" is listed at ${existing.location} (${confidence}% match score).`).catch(err => console.error('[SMS] New reporter alert failed:', err.message));
+            }
+            if (userExisting && userExisting.phone) {
+              _smsCallback(userExisting.phone, `[IIUI Lost & Found] Smart Match found! A new similar ${newItem.type} item "${newItem.title}" has been reported at ${newItem.location} (${confidence}% match score).`).catch(err => console.error('[SMS] Existing reporter alert failed:', err.message));
+            }
+          } catch (smsErr) {
+            console.error('[SMS] Match notification dispatch error:', smsErr.message);
+          }
+        }
       }
     }
   }
@@ -552,5 +575,6 @@ module.exports = {
   claims,
   chats,
   notifications,
-  matching
+  matching,
+  setSmsCallback
 };

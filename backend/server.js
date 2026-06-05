@@ -10,6 +10,9 @@ const db = require('./db_supabase');
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
 const SENDER_NAME = process.env.SENDER_NAME;
+const TWILIO_SID = process.env.TWILIO_ACCOUNT_SID;
+const TWILIO_AUTH = process.env.TWILIO_AUTH_TOKEN;
+const TWILIO_PHONE = process.env.TWILIO_PHONE_NUMBER;
 
 if (!BREVO_API_KEY || !SENDER_EMAIL || !SENDER_NAME) {
   console.warn('Missing BREVO env vars. Email sending may fail.');
@@ -54,6 +57,81 @@ function sendBrevoEmail(toEmail, toName, subject, htmlContent) {
   });
 }
 
+// ========== SMS SERVICE (Twilio / Simulated) ==========
+// Sends an SMS alert to the given phone number.
+// If Twilio credentials are configured, sends a real SMS via the Twilio REST API.
+// Otherwise, simulates by logging to console (for demo/viva purposes).
+async function sendSmsAlert(toPhone, messageText) {
+  if (!toPhone || toPhone.trim().length < 5) {
+    console.log('[SMS] Skipped — no valid phone number provided.');
+    return { simulated: true, skipped: true };
+  }
+
+  const cleanPhone = toPhone.replace(/[^\d+]/g, '');
+  console.log(`\n${'='.repeat(60)}`);
+  console.log(`📱 SMS ALERT DISPATCHED`);
+  console.log(`${'='.repeat(60)}`);
+  console.log(`   To:      ${cleanPhone}`);
+  console.log(`   Message: ${messageText}`);
+  console.log(`   Time:    ${new Date().toLocaleString()}`);
+
+  // If Twilio credentials are provided, send a real SMS
+  if (TWILIO_SID && TWILIO_AUTH && TWILIO_PHONE) {
+    return new Promise((resolve, reject) => {
+      const postData = new URLSearchParams({
+        To: cleanPhone,
+        From: TWILIO_PHONE,
+        Body: messageText
+      }).toString();
+
+      const options = {
+        hostname: 'api.twilio.com',
+        path: `/2010-04-01/Accounts/${TWILIO_SID}/Messages.json`,
+        method: 'POST',
+        auth: `${TWILIO_SID}:${TWILIO_AUTH}`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            console.log(`   Status:  ✅ DELIVERED via Twilio`);
+            console.log(`${'='.repeat(60)}\n`);
+            resolve(JSON.parse(data));
+          } else {
+            console.log(`   Status:  ⚠️ Twilio error ${res.statusCode}`);
+            console.log(`${'='.repeat(60)}\n`);
+            reject(new Error(`Twilio API error ${res.statusCode}: ${data}`));
+          }
+        });
+      });
+
+      req.on('error', (err) => {
+        console.log(`   Status:  ⚠️ Network error: ${err.message}`);
+        console.log(`${'='.repeat(60)}\n`);
+        reject(err);
+      });
+
+      req.write(postData);
+      req.end();
+    });
+  } else {
+    // Simulated mode — SMS is logged to console for viva demonstration
+    console.log(`   Status:  ✅ SIMULATED (Twilio credentials not configured)`);
+    console.log(`   Note:    In production, this would send a real SMS via Twilio API.`);
+    console.log(`${'='.repeat(60)}\n`);
+    return { simulated: true, to: cleanPhone, message: messageText };
+  }
+}
+
+// Register SMS callback for Smart Matches in the database layer
+db.setSmsCallback(sendSmsAlert);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -85,6 +163,7 @@ async function seedData() {
       fullName: 'IIUI Lost & Found Admin',
       department: 'Administration & Security',
       password: await bcrypt.hash('adminpassword', 10),
+      phone: '+920000000000',
       role: 'admin'
     });
 
@@ -93,6 +172,7 @@ async function seedData() {
       fullName: 'Ahmed Ali',
       department: 'Faculty of Computing',
       password: await bcrypt.hash('password123', 10),
+      phone: '+923001234567',
       role: 'user'
     });
 
@@ -101,6 +181,7 @@ async function seedData() {
       fullName: 'Zainab Bibi',
       department: 'Faculty of Social Sciences',
       password: await bcrypt.hash('password123', 10),
+      phone: '+923009876543',
       role: 'user'
     });
 
@@ -154,9 +235,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const activeOtps = {};
 
 app.post('/api/auth/register', async (req, res) => {
-  const { email, fullName, password, department } = req.body;
+  const { email, fullName, password, department, phone } = req.body;
   if (!email || !fullName || !password || !department) {
     return res.status(400).json({ error: 'Please enter all details' });
+  }
+
+  if (!phone || phone.trim().length < 5) {
+    return res.status(400).json({ error: 'Please enter a valid mobile/phone number for SMS alerts' });
   }
 
   const lowerEmail = email.toLowerCase().trim();
@@ -173,7 +258,7 @@ app.post('/api/auth/register', async (req, res) => {
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   activeOtps[lowerEmail] = {
     otp,
-    userData: { email: lowerEmail, fullName, password, department },
+    userData: { email: lowerEmail, fullName, password, department, phone: phone.trim() },
     expires: Date.now() + 10 * 60 * 1000
   };
 
@@ -204,8 +289,12 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     console.log(`[AUTH] Registration OTP for ${lowerEmail} is [ ${otp} ]`);
     await sendBrevoEmail(lowerEmail, fullName, 'Your IIUI e-Lost & Found Verification Code', htmlContent);
+
+    // SMS Alert: Send OTP via SMS as well
+    sendSmsAlert(phone.trim(), `[IIUI Lost & Found] Your verification code is: ${otp}. Valid for 10 minutes. Do not share this code.`).catch(err => console.error('[SMS] OTP send failed:', err.message));
+
     res.json({
-      message: `Verification code sent to ${lowerEmail}. Please check your inbox (and spam folder).`,
+      message: `Verification code sent to ${lowerEmail} and your mobile number. Please check your inbox (and spam folder).`,
       email: lowerEmail
     });
   } catch (err) {
@@ -239,6 +328,9 @@ app.post('/api/auth/verify-otp', async (req, res) => {
   const user = await db.users.create({ ...record.userData, password: hashed });
   delete activeOtps[lowerEmail];
 
+  // SMS Alert: Welcome message after successful registration
+  sendSmsAlert(user.phone, `Welcome to IIUI Lost & Found, ${user.fullName}! Your account is now active. Report lost/found items at https://iiui-lost-found.onrender.com`).catch(err => console.error('[SMS] Welcome send failed:', err.message));
+
   res.json({
     message: 'Account verified and created successfully!',
     user: {
@@ -246,6 +338,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
       email: user.email,
       fullName: user.fullName,
       department: user.department,
+      phone: user.phone,
       role: user.role
     }
   });
@@ -275,6 +368,7 @@ app.post('/api/auth/login', async (req, res) => {
       email: user.email,
       fullName: user.fullName,
       department: user.department,
+      phone: user.phone,
       role: user.role
     }
   });
@@ -436,7 +530,17 @@ app.post('/api/items/:id/claim', upload.single('studentCard'), async (req, res) 
     studentCardUrl
   });
 
-  res.status(201).json({ message: 'Claim request submitted! The finder has been notified.', claim });
+  // SMS Alert: Notify item reporter about new claim
+  try {
+    const reporter = await db.users.find(u => u.id === item.reporterId);
+    if (reporter && reporter.phone) {
+      sendSmsAlert(reporter.phone, `[IIUI Lost & Found] New claim received! ${claimerName} has claimed your item "${item.title}". Login to review their proof and approve/reject.`).catch(err => console.error('[SMS] Claim notification failed:', err.message));
+    }
+  } catch (smsErr) {
+    console.error('[SMS] Claim reporter notify error:', smsErr.message);
+  }
+
+  res.status(201).json({ message: 'Claim request submitted! The finder has been notified via email and SMS.', claim });
 });
 
 app.get('/api/my-claims', async (req, res) => {
@@ -469,6 +573,21 @@ app.post('/api/claims/:id/status', async (req, res) => {
   if (item.reporterId !== userId && role !== 'admin') return res.status(403).json({ error: 'Unauthorized to approve/decline claims for this item' });
 
   const updatedClaim = await db.claims.updateStatus(claimId, status);
+
+  // SMS Alert: Notify claimer about claim decision
+  try {
+    const claimer = await db.users.find(u => u.id === claim.claimerId);
+    if (claimer && claimer.phone) {
+      if (status === 'approved') {
+        sendSmsAlert(claimer.phone, `[IIUI Lost & Found] 🎉 Your claim for "${item.title}" has been APPROVED! Login to chat with the finder and arrange a campus meetup.`).catch(err => console.error('[SMS] Claim approved notify failed:', err.message));
+      } else {
+        sendSmsAlert(claimer.phone, `[IIUI Lost & Found] Your claim for "${item.title}" was rejected. The proof details did not match. You can try again with more specific details.`).catch(err => console.error('[SMS] Claim rejected notify failed:', err.message));
+      }
+    }
+  } catch (smsErr) {
+    console.error('[SMS] Claim status notify error:', smsErr.message);
+  }
+
   res.json({ message: `Claim request has been successfully ${status}!`, claim: updatedClaim });
 });
 
