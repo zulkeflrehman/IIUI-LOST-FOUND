@@ -335,13 +335,23 @@ const dashboard = {
   },
 
   openCoordinationChat(itemId, claimerId) {
+    // Switch to the messages tab - the chat system will load all rooms
+    // and we try to auto-select the matching room
     const btn = document.querySelector('.dash-tab-btn[data-tab="messages"]');
     if (btn) btn.click();
     
-    // Set active room manually based on IDs
-    setTimeout(() => {
-      this.activeChatRoomId = `${itemId}_${auth.currentUser.id === claimerId ? '' : claimerId}`; // dynamically fetched later
-    }, 100);
+    // After chat rooms load, try to find and select the correct room
+    setTimeout(async () => {
+      try {
+        const rooms = await api.get('/chats', { userId: auth.currentUser.id });
+        const matchingRoom = rooms.find(r => r.itemId === itemId);
+        if (matchingRoom) {
+          this.selectChatRoom(matchingRoom.roomId || matchingRoom.id);
+        }
+      } catch (err) {
+        console.error('Failed to auto-select chat room:', err);
+      }
+    }, 500);
   },
 
   // --- MESSENGER MODULE ---
@@ -393,12 +403,11 @@ const dashboard = {
     // Highlight sidebar row
     document.querySelectorAll('.chat-room-row').forEach(row => {
       row.classList.remove('active');
-    });
-    
-    // Find active element manually or via query
-    const rows = document.querySelectorAll('.chat-room-row');
-    rows.forEach(r => {
-      // room selection
+      // Check if this row's onclick contains the matching roomId
+      const onclickAttr = row.getAttribute('onclick') || '';
+      if (onclickAttr.includes(roomId)) {
+        row.classList.add('active');
+      }
     });
 
     document.getElementById('chat-empty-state').style.display = 'none';

@@ -630,9 +630,10 @@ app.post('/api/notifications/read', async (req, res) => {
 app.get('/api/admin/stats', async (req, res) => {
   const dbData = await db.items.all();
   const totalItems = dbData.length;
-  const lostCount = dbData.filter(i => i.status === 'lost').length;
-  const foundCount = dbData.filter(i => i.status === 'found').length;
   const claimedCount = dbData.filter(i => i.status === 'claimed').length;
+  // Count by type field (permanent) rather than status (changes to 'claimed')
+  const lostCount = dbData.filter(i => i.type === 'lost' && i.status !== 'claimed').length;
+  const foundCount = dbData.filter(i => i.type === 'found' && i.status !== 'claimed').length;
   const recoveryRate = totalItems > 0 ? Math.round((claimedCount / totalItems) * 100) : 0;
 
   res.json({ totalItems, lostCount, foundCount, claimedCount, recoveryRate });

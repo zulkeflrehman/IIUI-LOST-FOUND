@@ -50,13 +50,13 @@ async function uploadBufferToStorage(folder, filename, buffer, contentType = 'ap
 // --- MAPPING UTILITIES ---
 
 function toDbUser(user) {
+  const departmentText = user.phone ? `${user.department}||${user.phone}` : user.department;
   return {
     id: user.id,
     email: user.email,
     fullname: user.fullName,
-    department: user.department,
+    department: departmentText,
     password: user.password,
-    phone: user.phone || '',
     role: user.role,
     createdat: user.createdAt
   };
@@ -64,13 +64,17 @@ function toDbUser(user) {
 
 function fromDbUser(row) {
   if (!row) return null;
+  const departmentText = row.department || '';
+  const parts = departmentText.split('||');
+  const department = parts[0];
+  const phone = parts[1] || '';
   return {
     id: row.id,
     email: row.email,
     fullName: row.fullname,
-    department: row.department,
+    department: department,
     password: row.password,
-    phone: row.phone || '',
+    phone: phone,
     role: row.role,
     createdAt: row.createdat
   };

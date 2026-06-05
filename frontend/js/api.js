@@ -1,5 +1,6 @@
 // Centralized API Wrapper for e-Lost & Found System
-const API_BASE = 'https://iiui-lost-found.onrender.com/api';
+// Uses relative paths so it works both locally and on deployed server
+const API_BASE = '/api';
 
 const api = {
   async get(endpoint, params = {}) {
