@@ -639,6 +639,128 @@ app.get('/api/admin/stats', async (req, res) => {
   res.json({ totalItems, lostCount, foundCount, claimedCount, recoveryRate });
 });
 
+// ==================== PASSWORD RESET ENDPOINTS ====================
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+
+  const lowerEmail = email.toLowerCase().trim();
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(lowerEmail)) {
+    return res.status(400).json({ error: 'Please enter a valid email address' });
+  }
+
+  const user = await db.users.find(u => u.email.toLowerCase() === lowerEmail);
+  if (!user) {
+    return res.status(404).json({ error: 'This email address is not registered. Please check the spelling or sign up first.' });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  if (!global.resetOtps) global.resetOtps = {};
+  global.resetOtps[lowerEmail] = {
+    otp,
+    fullName: user.fullName,
+    expires: Date.now() + 10 * 60 * 1000
+  };
+
+  const htmlContent = `
+    <div style="font-family: 'Inter', Arial, sans-serif; background: #070b15; padding: 40px 20px; min-height: 100vh;">
+      <div style="max-width: 520px; margin: 0 auto; background: #0c1122; border: 1px solid rgba(255,255,255,0.07); border-radius: 20px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px 40px; text-align: center;">
+          <h1 style="color: #f0fdf4; font-size: 22px; font-weight: 800; margin: 0; letter-spacing: -0.5px;">e-Lost &amp; Found IIUI</h1>
+          <p style="color: #d1fae5; opacity: 0.85; font-size: 13px; margin: 5px 0 0;">International Islamic University Islamabad</p>
+        </div>
+        <div style="padding: 40px;">
+          <h2 style="color: #f8fafc; font-size: 20px; margin: 0 0 8px;">Reset Your Password</h2>
+          <p style="color: #94a3b8; font-size: 14px; line-height: 1.7; margin: 0 0 30px;">
+            Hello <strong style="color: #f8fafc;">${user.fullName}</strong>, we received a request to reset your password for the IIUI Lost &amp; Found portal. Use the code below to proceed.
+          </p>
+          <div style="background: #131b31; border: 1px solid rgba(16,185,129,0.2); border-radius: 14px; padding: 28px; text-align: center; margin-bottom: 30px;">
+            <p style="color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 12px;">Your Password Reset Code</p>
+            <h1 style="color: #10b981; font-size: 48px; font-weight: 800; letter-spacing: 14px; margin: 0;">${otp}</h1>
+            <p style="color: #64748b; font-size: 12px; margin: 12px 0 0;">This code expires in <strong>10 minutes</strong></p>
+          </div>
+          <div style="background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;">
+            <p style="color: #fca5a5; font-size: 12.5px; margin: 0;"><strong>&#9888; Security Notice:</strong> If you did not request a password reset, please ignore this email. Your account remains secure.</p>
+          </div>
+          <p style="color: #64748b; font-size: 13px; line-height: 1.6;">Never share this code with anyone. IIUI Lost &amp; Found staff will never ask for this code.</p>
+        </div>
+        <div style="border-top: 1px solid rgba(255,255,255,0.05); padding: 20px 40px; text-align: center;">
+          <p style="color: #64748b; font-size: 12px; margin: 0;">e-Lost &amp; Found &mdash; IIUI Campus Portal &bull; Islamabad, Pakistan</p>
+        </div>
+      </div>
+    </div>`;
+
+  try {
+    console.log(`[AUTH] Password Reset OTP for ${lowerEmail} is [ ${otp} ]`);
+    await sendBrevoEmail(lowerEmail, user.fullName, 'Password Reset Code — IIUI Lost & Found', htmlContent);
+
+    // SMS Alert for password reset
+    if (user.phone) {
+      sendSmsAlert(user.phone, `[IIUI Lost & Found] Your password reset code is: ${otp}. Valid for 10 minutes. Do NOT share this code with anyone.`)
+        .catch(err => console.error('[SMS] Reset OTP send failed:', err.message));
+    }
+
+    res.json({ message: 'If an account with that email exists, a reset code has been sent.', email: lowerEmail });
+  } catch (err) {
+    console.error('[EMAIL] Reset OTP error:', err.message);
+    res.status(500).json({ error: 'Failed to send reset email. Please check your email address and try again.' });
+  }
+});
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+  }
+
+  const lowerEmail = email.toLowerCase().trim();
+  const record = global.resetOtps && global.resetOtps[lowerEmail];
+
+  if (!record) {
+    return res.status(400).json({ error: 'No active reset session found. Please request a new code.' });
+  }
+  if (record.expires < Date.now()) {
+    delete global.resetOtps[lowerEmail];
+    return res.status(400).json({ error: 'Reset code has expired. Please request a new one.' });
+  }
+  if (record.otp !== otp.trim()) {
+    return res.status(400).json({ error: 'Invalid reset code. Please check and try again.' });
+  }
+
+  // Find user to confirm they exist
+  const user = await db.users.find(u => u.email.toLowerCase() === lowerEmail);
+  if (!user) {
+    return res.status(400).json({ error: 'Account not found.' });
+  }
+
+  // Update password in Supabase using direct update query
+  const hashed = await bcrypt.hash(newPassword, 10);
+  const { createClient } = require('@supabase/supabase-js');
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({ password: hashed })
+    .eq('email', lowerEmail);
+
+  if (updateError) {
+    console.error('[AUTH] Password update error:', updateError.message);
+    return res.status(500).json({ error: 'Failed to update password. Please try again.' });
+  }
+
+  delete global.resetOtps[lowerEmail];
+  console.log(`[AUTH] Password successfully reset for ${lowerEmail}`);
+
+  res.json({ message: 'Password updated successfully! You can now sign in with your new password.' });
+});
+
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 app.get('*', (req, res) => {

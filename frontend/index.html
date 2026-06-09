@@ -252,6 +252,12 @@
                   <i class="fa-solid fa-lock"></i>
                   <input type="password" id="login-password" required placeholder="••••••••">
                 </div>
+                <!-- Forgot Password Link -->
+                <div style="text-align: right; margin-top: 4px;">
+                  <button type="button" class="btn-forgot-password" id="btn-open-forgot-password">
+                    <i class="fa-solid fa-key"></i> Forgot your password?
+                  </button>
+                </div>
               </div>
               <button type="submit" class="btn btn-gradient btn-full btn-lg"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
             </form>
@@ -718,6 +724,150 @@
         
         <button class="btn btn-gradient btn-full btn-lg margin-top-20" id="btn-verify-otp"><i class="fa-solid fa-circle-check"></i> Verify & Register</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ====================================================
+       FORGOT PASSWORD MODAL — 3-Step Flow
+       Step 1: Enter Email  |  Step 2: OTP  |  Step 3: New Password
+       ==================================================== -->
+  <div class="modal-backdrop" id="modal-forgot-password" style="display: none;">
+    <div class="modal-card glass-card" style="max-width: 480px; border-color: rgba(16,185,129,0.15);">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="forgot-pw-modal-icon" id="forgot-pw-icon">
+            <i class="fa-solid fa-key" id="forgot-pw-icon-el"></i>
+          </div>
+          <div>
+            <h3 id="forgot-pw-title">Forgot Password</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;" id="forgot-pw-step-label">Step 1 of 3 — Enter your email</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-forgot-pw"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- STEP PROGRESS BAR -->
+      <div class="forgot-pw-progress">
+        <div class="forgot-pw-progress-track">
+          <div class="forgot-pw-progress-fill" id="forgot-pw-progress-fill" style="width: 33.33%;"></div>
+        </div>
+        <div class="forgot-pw-steps">
+          <div class="fpw-step active" id="fpw-step-dot-1"><span>1</span><small>Email</small></div>
+          <div class="fpw-step" id="fpw-step-dot-2"><span>2</span><small>Verify</small></div>
+          <div class="fpw-step" id="fpw-step-dot-3"><span>3</span><small>Reset</small></div>
+        </div>
+      </div>
+
+      <!-- STEP 1: Email Entry -->
+      <div class="modal-body forgot-pw-step-panel" id="forgot-pw-step-1">
+        <p style="color: var(--text-secondary); font-size: 13.5px; line-height: 1.75; margin-bottom: 24px;">
+          Enter your registered email address. We'll dispatch a <strong style="color: var(--accent-green);">6-digit security code</strong> to your inbox within seconds.
+        </p>
+        <div class="input-group">
+          <label for="forgot-pw-email">Registered Email Address</label>
+          <div class="input-with-icon">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" id="forgot-pw-email" placeholder="e.g. ahmed@iiu.edu.pk" autocomplete="email">
+          </div>
+        </div>
+        <button class="btn btn-gradient btn-full btn-lg" id="btn-forgot-pw-send" style="margin-top: 8px;">
+          <i class="fa-solid fa-paper-plane"></i> Send Reset Code
+        </button>
+      </div>
+
+      <!-- STEP 2: OTP Verification -->
+      <div class="modal-body forgot-pw-step-panel" id="forgot-pw-step-2" style="display: none;">
+        <div class="otp-simulated-notification" style="margin-bottom: 22px;">
+          <i class="fa-solid fa-envelope-open-text text-info"></i>
+          <div>
+            <strong>Reset Code Dispatched!</strong><br>
+            A 6-digit code was sent to <strong id="forgot-pw-sent-email" class="text-gradient">your email</strong>. Check your inbox &amp; spam folder.
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom: 0;">
+          <label for="forgot-pw-otp">6-Digit Reset Code</label>
+          <div class="otp-input-container" style="margin: 6px 0;">
+            <input type="text" id="forgot-pw-otp" maxlength="6" placeholder="000000" class="otp-digits-input" style="width: 100%; max-width: 100%; letter-spacing: 10px; font-size: 28px; text-align: center;">
+          </div>
+          <p style="font-size: 11.5px; color: var(--text-muted); text-align: center; margin-top: 6px;"><i class="fa-solid fa-clock"></i> Code valid for 10 minutes</p>
+        </div>
+        <button class="btn btn-gradient btn-full btn-lg" id="btn-forgot-pw-verify" style="margin-top: 16px;">
+          <i class="fa-solid fa-shield-halved"></i> Verify Code &amp; Continue
+        </button>
+        <div style="text-align: center; margin-top: 18px; display: flex; flex-direction: column; gap: 8px;">
+          <button class="text-link" id="btn-forgot-pw-resend" style="font-size: 13px;">
+            <i class="fa-solid fa-rotate-right"></i> Didn't receive it? Resend code
+          </button>
+          <button class="text-link" id="btn-forgot-pw-back" style="font-size: 12px; color: var(--text-muted);">
+            <i class="fa-solid fa-arrow-left"></i> Change email address
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: New Password -->
+      <div class="modal-body forgot-pw-step-panel" id="forgot-pw-step-3" style="display: none;">
+        <div class="forgot-pw-success-badge" style="margin-bottom: 22px;">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Identity confirmed! Now create a strong new password.</span>
+        </div>
+        <div class="input-group">
+          <label for="forgot-pw-new-pass">New Password</label>
+          <div class="input-with-icon pw-input-wrapper">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="forgot-pw-new-pass" placeholder="Min. 6 characters" autocomplete="new-password" style="padding-right: 50px;">
+            <button type="button" class="btn-pw-toggle" id="btn-toggle-new-pass" title="Toggle password visibility">
+              <i class="fa-solid fa-eye" id="icon-toggle-new-pass"></i>
+            </button>
+          </div>
+          <!-- Password Strength Bar -->
+          <div class="pw-strength-container" id="pw-strength-container" style="display: none;">
+            <div class="pw-strength-bar">
+              <div class="pw-strength-fill" id="pw-strength-fill"></div>
+            </div>
+            <span class="pw-strength-label" id="pw-strength-label">Weak</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="forgot-pw-confirm-pass">Confirm New Password</label>
+          <div class="input-with-icon pw-input-wrapper">
+            <i class="fa-solid fa-lock-open"></i>
+            <input type="password" id="forgot-pw-confirm-pass" placeholder="Re-enter your new password" autocomplete="new-password" style="padding-right: 50px;">
+            <button type="button" class="btn-pw-toggle" id="btn-toggle-confirm-pass" title="Toggle password visibility">
+              <i class="fa-solid fa-eye" id="icon-toggle-confirm-pass"></i>
+            </button>
+          </div>
+          <div class="pw-match-indicator" id="pw-match-indicator" style="display: none;">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Passwords match</span>
+          </div>
+          <div class="pw-nomatch-indicator" id="pw-nomatch-indicator" style="display: none;">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <span>Passwords do not match</span>
+          </div>
+        </div>
+        <button class="btn btn-gradient btn-full btn-lg" id="btn-forgot-pw-reset" style="margin-top: 8px;">
+          <i class="fa-solid fa-rotate-right"></i> Reset My Password
+        </button>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="modal-body forgot-pw-step-panel" id="forgot-pw-step-success" style="display: none; text-align: center; padding: 44px 28px;">
+        <div class="forgot-pw-final-success">
+          <div class="success-checkmark-anim">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <h3 style="margin: 20px 0 10px; font-size: 22px;">Password Reset!</h3>
+          <p style="color: var(--text-secondary); font-size: 14px; line-height: 1.7;">
+            Your password has been updated successfully.<br>You can now sign in with your new credentials.
+          </p>
+        </div>
+        <button class="btn btn-gradient btn-full btn-lg" id="btn-forgot-pw-goto-login" style="margin-top: 28px;">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In Now
+        </button>
+      </div>
+
     </div>
   </div>
 

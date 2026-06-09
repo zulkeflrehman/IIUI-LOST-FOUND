@@ -1221,3 +1221,251 @@ textarea.input-styled { height: auto; padding: 14px 16px; resize: vertical; line
 .border-warning { border-color: rgba(245, 158, 11, 0.3) !important; }
 .border-info    { border-color: rgba(59, 130, 246, 0.3) !important; }
 .btn-icon.btn-gradient { width: 46px; height: 46px; border-radius: 50%; }
+
+/* ============================================================
+   FORGOT PASSWORD — Complete UI Component Styles
+   ============================================================ */
+
+/* "Forgot your password?" link in the login form */
+.btn-forgot-password {
+  background: transparent;
+  border: none;
+  color: var(--accent-green);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  transition: var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.01em;
+  font-family: 'Inter', sans-serif;
+  opacity: 0.85;
+}
+.btn-forgot-password:hover {
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- Forgot Password Modal Icon ---- */
+.forgot-pw-modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.25) 100%);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: var(--accent-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(16,185,129,0.15);
+  transition: var(--transition-fast);
+}
+
+/* ---- Step Progress Bar ---- */
+.forgot-pw-progress {
+  padding: 0 28px 20px;
+  border-bottom: 1px solid var(--glass-border);
+}
+.forgot-pw-progress-track {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.forgot-pw-progress-fill {
+  height: 100%;
+  background: var(--primary-gradient);
+  border-radius: 8px;
+  transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 0 10px rgba(16,185,129,0.4);
+}
+.forgot-pw-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+.fpw-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: default;
+}
+.fpw-step span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: 'Outfit', sans-serif;
+  transition: var(--transition-fast);
+}
+.fpw-step small {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  transition: var(--transition-fast);
+}
+.fpw-step.active span {
+  background: var(--primary-gradient);
+  border-color: transparent;
+  color: #03210f;
+  box-shadow: 0 0 12px rgba(16,185,129,0.35);
+}
+.fpw-step.active small {
+  color: var(--accent-green);
+  font-weight: 600;
+}
+.fpw-step.done span {
+  background: rgba(16,185,129,0.15);
+  border-color: rgba(16,185,129,0.4);
+  color: var(--accent-green);
+}
+.fpw-step.done small {
+  color: var(--accent-green);
+}
+
+/* ---- Step Panel Transition ---- */
+.forgot-pw-step-panel {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* ---- Password Show/Hide Toggle ---- */
+.pw-input-wrapper {
+  position: relative;
+}
+.btn-pw-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: var(--transition-fast);
+  z-index: 5;
+  line-height: 1;
+}
+.btn-pw-toggle:hover {
+  color: var(--accent-green);
+  background: rgba(16,185,129,0.08);
+}
+
+/* ---- Password Strength Indicator ---- */
+.pw-strength-container {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pw-strength-bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.pw-strength-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.35s ease, background 0.35s ease;
+  width: 0%;
+}
+.pw-strength-fill.weak   { background: var(--danger);  width: 33%; }
+.pw-strength-fill.medium { background: var(--warning); width: 66%; }
+.pw-strength-fill.strong { background: var(--success); width: 100%; box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+.pw-strength-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 46px;
+  text-align: right;
+  transition: color 0.35s;
+}
+.pw-strength-label.weak   { color: var(--danger); }
+.pw-strength-label.medium { color: var(--warning); }
+.pw-strength-label.strong { color: var(--success); }
+
+/* ---- Password Match Indicators ---- */
+.pw-match-indicator,
+.pw-nomatch-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: fade-in 0.2s ease-out;
+}
+.pw-match-indicator   { color: var(--success); }
+.pw-nomatch-indicator { color: var(--danger); }
+
+/* ---- Verified Badge (Step 3 header) ---- */
+.forgot-pw-success-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(16,185,129,0.07);
+  border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+.forgot-pw-success-badge i {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* ---- Final Success State ---- */
+.forgot-pw-final-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.success-checkmark-anim {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0.04) 70%);
+  border: 2px solid rgba(16,185,129,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: var(--accent-green);
+  animation: success-pop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 32px rgba(16,185,129,0.28);
+}
+
+@keyframes success-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* ---- Responsive for Forgot PW modal on small screens ---- */
+@media (max-width: 520px) {
+  .forgot-pw-progress { padding: 0 20px 16px; }
+  .fpw-step small     { display: none; }
+}
+
