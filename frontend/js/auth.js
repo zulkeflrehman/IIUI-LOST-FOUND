@@ -199,12 +199,13 @@ const auth = {
         btnForgotPwVerify.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
 
         try {
-          // We verify the OTP on the backend during reset — store locally for step 3
+          // Perform real-time validation of OTP on the backend first!
+          await api.post('/auth/verify-reset-otp', { email: window._forgotPwEmail, otp });
           window._forgotPwOtp = otp;
           auth.forgotPassword.goToStep(3);
           app.showToast('Code verified! Set your new password.', 'success');
         } catch (err) {
-          app.showToast(err.message || 'Verification failed.', 'danger');
+          app.showToast(err.message || 'Verification failed. Please try again.', 'danger');
         } finally {
           btnForgotPwVerify.disabled = false;
           btnForgotPwVerify.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Verify Code & Continue';

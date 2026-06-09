@@ -709,6 +709,30 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
+app.post('/api/auth/verify-reset-otp', (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(400).json({ error: 'Email and reset code are required' });
+  }
+
+  const lowerEmail = email.toLowerCase().trim();
+  const record = global.resetOtps && global.resetOtps[lowerEmail];
+
+  if (!record) {
+    return res.status(400).json({ error: 'No active reset session found. Please request a new code.' });
+  }
+  if (record.expires < Date.now()) {
+    delete global.resetOtps[lowerEmail];
+    return res.status(400).json({ error: 'Reset code has expired. Please request a new one.' });
+  }
+  if (record.otp !== otp.trim()) {
+    console.log(`[AUTH] Verification failed for ${lowerEmail}. Expected: [${record.otp}], Received: [${otp.trim()}]`);
+    return res.status(400).json({ error: 'Invalid reset code. Please check and try again.' });
+  }
+
+  res.json({ success: true, message: 'Reset code verified successfully.' });
+});
+
 app.post('/api/auth/reset-password', async (req, res) => {
   const { email, otp, newPassword } = req.body;
   if (!email || !otp || !newPassword) {
@@ -729,6 +753,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
     return res.status(400).json({ error: 'Reset code has expired. Please request a new one.' });
   }
   if (record.otp !== otp.trim()) {
+    console.log(`[AUTH] Reset OTP mismatch for ${lowerEmail}. Expected: [${record.otp}], Received: [${otp.trim()}]`);
     return res.status(400).json({ error: 'Invalid reset code. Please check and try again.' });
   }
 
